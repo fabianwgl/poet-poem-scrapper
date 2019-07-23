@@ -30,9 +30,11 @@
 
     await helperPage.goto(href)
     const pPoem = await helperPage.$$('#solSiirMetinDV > div.KonaBody > p', p => p)
-    console.log({pPoem})
+    const h1PoemTitle = await helperPage.$$('#solSiirMetinDV > h1', h1 => h1)
+
+    const title = await GetProperty(h1PoemTitle[0], 'innerText')
     const text = await GetProperty(pPoem[0], 'innerText')
-    console.log(text)
+    console.log({title, text})
   })
 
   await browser.close();
