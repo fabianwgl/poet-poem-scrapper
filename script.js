@@ -1,19 +1,15 @@
 
 
 (async () => {
+  const fs = require('fs').promises
   const puppeteer = require('puppeteer')
 
   const browser = await puppeteer.launch()
   const page = await browser.newPage()
-  await page.goto('https://www.poemhunter.com/arthur-rimbaud/poems/')
+  await page.goto('https://www.poemhunter.com/arthur-rimbaud/poems/page-4/?a=a&l=3&y=')
   const helperPage = await browser.newPage()
-  //    await page.screenshot({path: 'example.png'});
 
-  //    const tbody = await page.$$('#solSDDiv > div:nth-child(1) > div > div.content > table > tbody')
-  //    const childrens = await tbody.$$('tr');
-  const elements = await page.$$('.title>a', el => el);
-  //    console.log({elements})
-  
+  //    HELPER FUNCTIONS
   const GetProperty = async(element, property) => {
     return await (await element.getProperty(property)).jsonValue()
   }
@@ -23,18 +19,22 @@
       await callback(array[index], index, array);
     }
   }
+
+  const elements = await page.$$('.title>a', el => el);
   
   await asyncForEach(elements, async node => {
     const href = await GetProperty(node, 'href')
-    //  console.log(href)
 
     await helperPage.goto(href)
-    const pPoem = await helperPage.$$('#solSiirMetinDV > div.KonaBody > p', p => p)
-    const h1PoemTitle = await helperPage.$$('#solSiirMetinDV > h1', h1 => h1)
 
+    const h1PoemTitle = await helperPage.$$('#solSiirMetinDV > h1', h1 => h1)
+    const pPoem = await helperPage.$$('#solSiirMetinDV > div.KonaBody > p', p => p)
+    
     const title = await GetProperty(h1PoemTitle[0], 'innerText')
     const text = await GetProperty(pPoem[0], 'innerText')
     console.log({title, text})
+    await fs.writeFile(`./poems/${title.replace('/', '-')}.txt`, text)
+
   })
 
   await browser.close();
